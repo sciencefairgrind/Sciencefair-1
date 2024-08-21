@@ -1,0 +1,52 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Load dataset (replace 'genetic_data.csv' with your data file)
+data = pd.read_csv('genetic_data.csv')
+
+# Display the first few rows of the dataset
+print(data.head())
+
+# Prepare features and labels
+X = data.drop('CF', axis=1)  # Features
+y = data['CF']  # Labels (1 for Cystic Fibrosis, 0 for non-Cystic Fibrosis)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Initialize and train the Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+
+# Make predictions
+y_pred = clf.predict(X_test)
+
+# Print classification report
+print(classification_report(y_test, y_pred))
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Non-CF', 'CF'], yticklabels=['Non-CF', 'CF'])
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
+
+# Feature Importances
+importances = clf.feature_importances_
+feature_names = X.columns
+sorted_idx = np.argsort(importances)[::-1]
+
+plt.figure(figsize=(12, 8))
+plt.bar(range(X.shape[1]), importances[sorted_idx], align='center')
+plt.xticks(range(X.shape[1]), np.array(feature_names)[sorted_idx], rotation=90)
+plt.title('Feature Importances')
+plt.xlabel('Feature')
+plt.ylabel('Importance')
+plt.show()
